@@ -19,7 +19,6 @@ class Runner extends Chessman {
 	    }
 	    diff+=1
 	  }
-	  
 	  //mark everything right from piece position
 	  diff = 0
 	  for(x <- xPos until xSize){
