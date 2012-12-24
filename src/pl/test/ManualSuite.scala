@@ -5,6 +5,8 @@ import pl.chess.pawns.Runner
 import pl.chess.pawns.Queen
 import pl.chess.pawns.Knight
 import pl.chess.pawns.King
+import pl.chess.BasicAlgorithm
+import scala.collection.mutable.MutableList
 
 object ManualSuite {
 
@@ -14,6 +16,10 @@ object ManualSuite {
     val queenMark = new Queen().markAttackPositions(1, 1, Array.fill(5,5)(false))
     val knightMark = new Knight().markAttackPositions(2, 2, Array.fill(5,5)(false))
     val kingMark = new King().markAttackPositions(3, 3, Array.fill(5,5)(false))
+    
+    val basicAlg = new BasicAlgorithm().convertToChessboard(5, 5, 
+        MutableList((new King, 1, 2)))
+    println(basicAlg.toString())
   }
 
 }
