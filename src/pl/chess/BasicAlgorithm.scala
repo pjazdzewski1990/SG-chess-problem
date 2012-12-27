@@ -19,29 +19,7 @@ class BasicAlgorithm extends SolverAlgorithm {
 	val possibleResults = MutableList[ChessBoard]()
 	
 	val pieces = createPiecesList()
-    /*var attackBoard = createAttackBoard(sizeX, sizeY)
     
-    var firstAvailableField = 0
-    var firstNotPlacedPiece : Int = 0
-    while(true){
-      //set the first piece on the first available position
-      val y = Math.floor(firstAvailableField/(sizeX*1.0))
-      val test = (pieces(firstNotPlacedPiece)._1, y.toInt, firstAvailableField%sizeX)
-      pieces(firstNotPlacedPiece) = (pieces(firstNotPlacedPiece)._1, y.toInt, firstAvailableField%sizeX)
-      
-      attackBoard = calculateAttackBoard(sizeX, sizeY, pieces)
-      
-      if(noAttacks(pieces, attackBoard)){
-        firstNotPlacedPiece = findNotPlacedPiece(pieces)
-        if(firstNotPlacedPiece == -1){
-    	  //save solution on list
-          possibleResults += convertToChessboard(sizeX, sizeY, pieces)
-        }
-      }else{
-      }
-    }*/
-    
-    //var pieceSkip = 0
     var fieldSkip = 0
     while(true){
       var attackBoard = calculateAttackBoard(sizeX, sizeY, pieces)
@@ -56,39 +34,37 @@ class BasicAlgorithm extends SolverAlgorithm {
       }
       
       val field = availableField(attackBoard, fieldSkip)
-      //val piece = notPlacedPiece(pieces, pieceSkip)
-      println("Pole " + field)
       if(field != -1) {
         var fieldSkipIncrement = 0
         //we have found empty not attacked field, now place a figure there
         breakable {
-        for(pieceWithIndex <- filtered) {
-          val piece = pieceWithIndex._1  
-          val index = pieceWithIndex._2
-          //there is a piece that can be put on 
-          val y = Math.floor(field/sizeX.toDouble)
-          val x = field%sizeX
+          for(pieceWithIndex <- filtered) {
+            val piece = pieceWithIndex._1  
+            val index = pieceWithIndex._2
+            //there is a piece that can be put on 
+            val y = Math.floor(field/sizeX.toDouble)
+            val x = field%sizeX
           
-          val oldY = piece._2
-          val oldX = piece._3
+            val oldY = piece._2
+            val oldX = piece._3
           
-          val attackBoard = calculateAttackBoard(sizeX, sizeY, pieces)
-          pieces(index) = (piece._1, y.toInt, x)
-          //there are no attacks:
-          // the new figure is not attacked by the old ones && the new one doesn't attack any of the old
-          if(attackBoard(y.toInt)(x)==false && !noAttack(sizeX, sizeY, index, pieces)){
-            //revert the changes
-            //pieceSkip += 1
-            fieldSkipIncrement = 1
-            pieces(index) = (piece._1, oldY, oldX)
-          }else{
-            //pieceSkip = 0 
-            fieldSkipIncrement = 0
-            break()
-          }
-      	}}
+            val attackBoard = calculateAttackBoard(sizeX, sizeY, pieces)
+            pieces(index) = (piece._1, y.toInt, x)
+            //there are no attacks:
+            // the new figure is not attacked by the old ones && the new one doesn't attack any of the old
+            if(attackBoard(y.toInt)(x)==false && !noAttack(sizeX, sizeY, index, pieces)){
+              //revert the changes
+              //pieceSkip += 1
+              fieldSkipIncrement = 1
+              pieces(index) = (piece._1, oldY, oldX)
+            }else{
+              //pieceSkip = 0 
+              fieldSkipIncrement = 0
+              break()
+            }
+      	  }
+        }
       	fieldSkip += fieldSkipIncrement
-      	//println("after=" + convertToChessboard(sizeX, sizeY, pieces).toString);
       } else {
         //there is no field to put figure on
         stepBack()
@@ -97,6 +73,7 @@ class BasicAlgorithm extends SolverAlgorithm {
     possibleResults.toList
   }
   
+  /** get field ready for putting a chess piece */
   def availableField(attackBoard: Array[Array[Boolean]], fieldSkip: Int) :Int = {
     var counter = fieldSkip
     var elem = 0
@@ -117,6 +94,7 @@ class BasicAlgorithm extends SolverAlgorithm {
     -1
   }
   
+  /** return 2D array containing info about attacked positions */
   def calculateAttackBoard(sizeX: Int, sizeY: Int, pieces: MutableList[(Chessman, Int, Int)]) = {
     var board = Array.fill(sizeX, sizeY)(false)
     pieces.foreach(
@@ -129,6 +107,7 @@ class BasicAlgorithm extends SolverAlgorithm {
     board
   }
   
+  /** turn list into ChessBoard object */
   def convertToChessboard(sizeX: Int, sizeY: Int, pieces: MutableList[(Chessman, Int, Int)]) = {
     var boardArray = new Array[Array[Chessman]](sizeY);
     for(i <- 0 until sizeY){
@@ -143,10 +122,12 @@ class BasicAlgorithm extends SolverAlgorithm {
     board
   }
   
+  /** helper method for creating starting attackBoard */
   def createAttackBoard(sizeX: Int, sizeY: Int) = {
     Array.fill(sizeX, sizeY)(false)
   }
   
+  /** create list of chess pieces for current riddle */ 
   def createPiecesList() = {
     val pieces = MutableList[(Chessman, Int, Int)]()
 	for(i <- 0 until kingNum){
@@ -167,10 +148,7 @@ class BasicAlgorithm extends SolverAlgorithm {
     pieces
   }
   
-  def findNotPlacedPiece(pieces: MutableList[(Chessman, Int, Int)]) :Int = {
-    pieces.indexWhere(piece => -1==piece._2 && -1==piece._3)
-  }
-  
+  /** check whether the new chess figure, pieces(index), is attacking any pieces */
   def noAttack(sizeX: Int, sizeY: Int, index: Int, pieces: MutableList[(Chessman, Int, Int)]) = {
     val attackBoard = calculateAttackBoard(sizeX, sizeY, MutableList(pieces(index)))
     pieces.zipWithIndex.forall(pieceWithIndex => {
@@ -181,21 +159,6 @@ class BasicAlgorithm extends SolverAlgorithm {
         true
       }
     })
-  }
-  
-  def notPlacedPiece(pieces: MutableList[(Chessman, Int, Int)], pieceSkip: Int) :Option[(Int,(Chessman, Int, Int))] = {
-    var counter = pieceSkip
-    var num = -1
-    pieces.foreach( piece => { 
-        num += 1
-      	if(-1==piece._2){
-        counter -= 1
-        if(counter <= 0){
-          return Some((num, piece))
-        }
-      }
-    })
-    None
   }
   
   def stepBack() = {

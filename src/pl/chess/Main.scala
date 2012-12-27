@@ -4,7 +4,6 @@ object Main {
 
   /** Entry point for program */
   def main(args: Array[String]): Unit = {
-    println("Starting Chess Problem with params " + args);
     val M = 3; 
     val N = 3;
     val chessSet = Map("kingNum" -> 2,
