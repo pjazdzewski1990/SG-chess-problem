@@ -14,7 +14,8 @@ object Main {
     				"towerNum" -> 1)
     				
     val basic = new BasicAlgorithm();
-    val solver = new ChessSolver(M, N, chessSet)
-    val result = solver.solve(basic)
+    val task = new ChessProblem(M, N, chessSet)
+    val result = task.solve(basic)
+    result.foreach(res => println(res))
   }
 }
