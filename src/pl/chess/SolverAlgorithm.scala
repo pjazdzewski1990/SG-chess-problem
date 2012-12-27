@@ -1,6 +1,8 @@
 package pl.chess
 
-trait SolverAlgorithm {
+/** classes extending SolverAlgorithm are able to work as a engine for the chess problem - are able to come with a solution
+ * It also provides methods usefull across all solverAlgorithm classes*/
+abstract class SolverAlgorithm {
 	
 	var kingNum  	= 0
     var queenNum 	= 0
