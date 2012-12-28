@@ -18,8 +18,9 @@ class BasicAlgorithm extends SolverAlgorithm {
 	
 	val possibleResults = MutableList[ChessBoard]()
 	
-	val pieces = createPiecesList()
-    
+	var pieces = createPiecesList()
+    var index = 0		//id of last moved
+	
     var fieldSkip = 0
     while(true){
       var attackBoard = calculateAttackBoard(sizeX, sizeY, pieces)
@@ -30,7 +31,7 @@ class BasicAlgorithm extends SolverAlgorithm {
         println(solution.toString)
         possibleResults += solution
         
-        stepBack()
+        pieces = stepBack(index, pieces)
       }
       
       val field = availableField(attackBoard, fieldSkip)
@@ -40,7 +41,7 @@ class BasicAlgorithm extends SolverAlgorithm {
         breakable {
           for(pieceWithIndex <- filtered) {
             val piece = pieceWithIndex._1  
-            val index = pieceWithIndex._2
+            index = pieceWithIndex._2
             //there is a piece that can be put on 
             val y = Math.floor(field/sizeX.toDouble)
             val x = field%sizeX
@@ -57,7 +58,7 @@ class BasicAlgorithm extends SolverAlgorithm {
               //pieceSkip += 1
               fieldSkipIncrement = 1
               pieces(index) = (piece._1, oldY, oldX)
-            }else{
+            } else {
               //pieceSkip = 0 
               fieldSkipIncrement = 0
               break()
@@ -67,7 +68,9 @@ class BasicAlgorithm extends SolverAlgorithm {
       	fieldSkip += fieldSkipIncrement
       } else {
         //there is no field to put figure on
-        stepBack()
+        pieces = stepBack(index, pieces)
+        index -= 1
+        fieldSkip += 1
       }
     }
     possibleResults.toList
@@ -115,7 +118,7 @@ class BasicAlgorithm extends SolverAlgorithm {
     }
     pieces.foreach(
       piece => {
-        boardArray(piece._3)(piece._2) = piece._1
+        boardArray(piece._2)(piece._3) = piece._1
       }
     )
     val board = new ChessBoard(boardArray)
@@ -161,7 +164,10 @@ class BasicAlgorithm extends SolverAlgorithm {
     })
   }
   
-  def stepBack() = {
-    //TODO: revert last move
+  def stepBack(index :Int, pieces :MutableList[(Chessman, Int, Int)]) = {
+    //reset position the element at "index"
+    // ... and put that piece at the end of list
+    val test = pieces.take(index) ++ pieces.drop(index+1) ++ List((pieces(index)._1, -1, -1))
+    test
   }
 }
