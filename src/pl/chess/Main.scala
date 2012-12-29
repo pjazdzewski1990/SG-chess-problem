@@ -15,6 +15,7 @@ object Main {
     val basic = new BasicAlgorithm();
     val task = new ChessProblem(M, N, chessSet)
     val result = task.solve(basic)
+    println("Possible solutions:")
     result.foreach(res => println(res))
   }
 }

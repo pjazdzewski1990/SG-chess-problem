@@ -15,65 +15,56 @@ class BasicAlgorithm extends SolverAlgorithm {
 
   def solve(sizeX: Int, sizeY: Int, chessSet: Map[String, Int]): List[ChessBoard] = {
     parseArgs(chessSet)
-	
-	val possibleResults = MutableList[ChessBoard]()
-	
 	var pieces = createPiecesList()
-    var index = 0		//id of last moved
+    
+	val results = findSolutions(sizeX, sizeY, pieces)
 	
-    var fieldSkip = 0
-    while(true){
-      var attackBoard = calculateAttackBoard(sizeX, sizeY, pieces)
+    results.toList
+  }
+  
+  def findSolutions(sizeX: Int, sizeY: Int, pieces :MutableList[(Chessman, Int, Int)]) :MutableList[ChessBoard] ={
+	  var fieldSkip = 0
+	  var attackBoard = calculateAttackBoard(sizeX, sizeY, pieces)
+	  val possibleResults = MutableList[ChessBoard]()
       
       val filtered = pieces.zipWithIndex.filter(piece => piece._1._2 == -1) 
       if(filtered.length == 0){
         val solution = convertToChessboard(sizeX, sizeY, pieces)
         println(solution.toString)
-        possibleResults += solution
         
-        pieces = stepBack(index, pieces)
+        return MutableList(solution)
       }
       
-      val field = availableField(attackBoard, fieldSkip)
-      if(field != -1) {
-        var fieldSkipIncrement = 0
-        //we have found empty not attacked field, now place a figure there
-        breakable {
-          for(pieceWithIndex <- filtered) {
-            val piece = pieceWithIndex._1  
-            index = pieceWithIndex._2
-            //there is a piece that can be put on 
-            val y = Math.floor(field/sizeX.toDouble)
-            val x = field%sizeX
+	  while(true){
+	    val field = availableField(attackBoard, fieldSkip)
+		if(field != -1) {
+          //we have found empty not attacked field, now place a figure there
+            for(pieceWithIndex <- filtered) {
+              val piece = pieceWithIndex._1  
+              val index = pieceWithIndex._2
+              //there is a piece that can be put on 
+              val y = Math.floor(field/sizeX.toDouble)
+              val x = field%sizeX
           
-            val oldY = piece._2
-            val oldX = piece._3
-          
-            val attackBoard = calculateAttackBoard(sizeX, sizeY, pieces)
-            pieces(index) = (piece._1, y.toInt, x)
-            //there are no attacks:
-            // the new figure is not attacked by the old ones && the new one doesn't attack any of the old
-            if(attackBoard(y.toInt)(x)==false && !noAttack(sizeX, sizeY, index, pieces)){
-              //revert the changes
-              //pieceSkip += 1
-              fieldSkipIncrement = 1
-              pieces(index) = (piece._1, oldY, oldX)
-            } else {
-              //pieceSkip = 0 
-              fieldSkipIncrement = 0
-              break()
+              val attackBoard = calculateAttackBoard(sizeX, sizeY, pieces)
+              val p = copyList(pieces)
+              p(index) = (piece._1, y.toInt, x)
+              //there are no attacks:
+              // the new figure is not attacked by the old ones && the new one doesn't attack any of the old
+              if(attackBoard(y.toInt)(x)==false && !noAttack(sizeX, sizeY, index, p)){
+                //revert the changes
+              } else {
+                //continue looking for a solution
+                possibleResults ++= findSolutions(sizeX, sizeY, p)
+              }
             }
-      	  }
+      	  fieldSkip += 1
+        } else {
+          //there is no field to put figure on
+          return possibleResults
         }
-      	fieldSkip += fieldSkipIncrement
-      } else {
-        //there is no field to put figure on
-        pieces = stepBack(index, pieces)
-        index -= 1
-        fieldSkip += 1
-      }
-    }
-    possibleResults.toList
+	  }
+    possibleResults
   }
   
   /** get field ready for putting a chess piece */
@@ -84,7 +75,7 @@ class BasicAlgorithm extends SolverAlgorithm {
       row => row.foreach(
         field => if(!field){
           counter -= 1
-          if(counter <= 0){
+          if(counter < 0){
             return elem
           }else{
             elem += 1
@@ -108,6 +99,14 @@ class BasicAlgorithm extends SolverAlgorithm {
       }
     )
     board
+  }
+  
+  def copyList(list: MutableList[(Chessman, Int, Int)]) = {
+    val newList = MutableList[(Chessman, Int, Int)]()
+    for(i <- list){
+      newList += ((i._1, i._2, i._3))
+    }
+    newList
   }
   
   /** turn list into ChessBoard object */
