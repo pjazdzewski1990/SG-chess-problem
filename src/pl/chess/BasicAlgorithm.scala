@@ -11,33 +11,36 @@ import pl.chess.pawns.Runner
 import pl.chess.pawns.Tower
 import pl.chess.pawns.Queen
 
+/** Simplest way to solve the riddle, trying out any possible combinations. CHESS PIECES ARE TREATED AS DISTINCT */
 class BasicAlgorithm extends SolverAlgorithm {
 
   def solve(sizeX: Int, sizeY: Int, chessSet: Map[String, Int]): List[ChessBoard] = {
     parseArgs(chessSet)
 	var pieces = createPiecesList()
     
-	val results = findSolutions(sizeX, sizeY, pieces)
+	val results = findSolutions(sizeX, sizeY, pieces, 0)
 	
     results.toList
   }
   
-  def findSolutions(sizeX: Int, sizeY: Int, pieces :MutableList[(Chessman, Int, Int)]) :MutableList[ChessBoard] ={
+  def findSolutions(sizeX: Int, sizeY: Int, pieces :MutableList[(Chessman, Int, Int)], firstField: Int) :MutableList[ChessBoard] ={
 	  var fieldSkip = 0
 	  var attackBoard = calculateAttackBoard(sizeX, sizeY, pieces)
 	  val possibleResults = MutableList[ChessBoard]()
       
       val filtered = pieces.zipWithIndex.filter(piece => piece._1._2 == -1) 
-      if(filtered.length == 0){
+      if(filtered.length == 0) {
         val solution = convertToChessboard(sizeX, sizeY, pieces)
-        println(solution.toString)
+        //println(solution.toString)
         
         return MutableList(solution)
       }
       
-	  while(true){
+	  while(true) {
 	    val field = availableField(attackBoard, fieldSkip)
 		if(field != -1) {
+		  //all fields before field num "firstField" are considered as occupied
+		  if(field >= firstField){
           //we have found empty not attacked field, now place a figure there
             for(pieceWithIndex <- filtered) {
               val piece = pieceWithIndex._1  
@@ -55,9 +58,10 @@ class BasicAlgorithm extends SolverAlgorithm {
                 //revert the changes
               } else {
                 //continue looking for a solution
-                possibleResults ++= findSolutions(sizeX, sizeY, p)
+                possibleResults ++= findSolutions(sizeX, sizeY, p, field+1)
               }
             }
+		  }
       	  fieldSkip += 1
         } else {
           //there is no field to put figure on
@@ -161,12 +165,5 @@ class BasicAlgorithm extends SolverAlgorithm {
         true
       }
     })
-  }
-  
-  def stepBack(index :Int, pieces :MutableList[(Chessman, Int, Int)]) = {
-    //reset position the element at "index"
-    // ... and put that piece at the end of list
-    val test = pieces.take(index) ++ pieces.drop(index+1) ++ List((pieces(index)._1, -1, -1))
-    test
   }
 }
